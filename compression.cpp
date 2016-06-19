@@ -76,11 +76,14 @@ int compression_compress(FILE* input, FILE* output){
 		next_token[token.size()] = fgetc(input);
 		if(forward_map.find(next_token) == forward_map.end()){
 			output_put(output, current_bit, forward_map.at(token));
+			printf("Token output: %d\n", forward_map.at(token));
 			current_bit = count_bit(token_count);
 			if(current_bit > max_bit){
 				current_bit = max_bit;
 			}else{
-				forward_map[next_token] = current_bit++;
+				forward_map[next_token] = token_count;
+				printf("Token added %s->%d\n", next_token.c_str(), token_count);
+				token_count++;
 			}
 			token = " ";
 			token[0] = next_token[next_token.size()-1];
@@ -121,6 +124,7 @@ int compression_uncompress(FILE* input, FILE* output){
 	while(!feof(input)){
 		int k = input_get(input, current_bit);
 		current_token = backward_map.at(k);
+		printf("Get token %d\n", k);
 		output_string(output, current_token);
 		if(previous_token.size() != 0){
 			combined_token = previous_token + current_token.substr(0, 1);
@@ -132,7 +136,10 @@ int compression_uncompress(FILE* input, FILE* output){
 					token_count++;
 				}
 			}
+		}else{
+			current_bit++;
 		}
+		previous_token = current_token;
 	}
 
 	return EXIT_SUCCESS;
